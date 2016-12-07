@@ -32,18 +32,16 @@
             android:layout_margin="5dp">
 
             <ImageView
-                app:srcCompat="@drawable/jens"
+                app:srcCompat="@drawable/ornella"
                 android:layout_columnSpan="2"
-                android:layout_rowWeight="5"
                 android:layout_gravity="top|center_horizontal"
                 android:adjustViewBounds="true"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="170dp"
                 android:scaleType="centerCrop" />
 
             <ImageView
                 android:layout_gravity="fill"
-                android:layout_rowWeight="1"
                 app:srcCompat="@android:drawable/ic_media_play" />
 
             <TextView
@@ -52,7 +50,8 @@
                 android:layout_gravity="center_vertical|fill_horizontal"
                 android:textColor="@android:color/white"
                 android:textAlignment="center"
-                android:textSize="36sp" />
+                android:textSize="36sp"
+                android:fontFamily="sans-serif" />
 
         </GridLayout>
 
@@ -66,18 +65,16 @@
             android:layout_margin="5dp">
 
             <ImageView
-                app:srcCompat="@drawable/jens"
+                app:srcCompat="@drawable/maurizio"
                 android:layout_columnSpan="2"
-                android:layout_rowWeight="5"
                 android:layout_gravity="top|center_horizontal"
                 android:adjustViewBounds="true"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="170dp"
                 android:scaleType="centerCrop" />
 
             <ImageView
                 android:layout_gravity="fill"
-                android:layout_rowWeight="1"
                 app:srcCompat="@android:drawable/ic_media_play" />
 
             <TextView
@@ -100,14 +97,16 @@
             android:layout_margin="5dp">
 
             <ImageView
-                android:layout_gravity="fill"
-                app:srcCompat="@android:drawable/btn_star_big_on"
+                app:srcCompat="@drawable/jens"
                 android:layout_columnSpan="2"
-                android:layout_rowWeight="5" />
+                android:layout_gravity="top|center_horizontal"
+                android:adjustViewBounds="true"
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:layout_gravity="fill"
-                android:layout_rowWeight="1"
                 app:srcCompat="@android:drawable/ic_media_play" />
 
             <TextView
@@ -130,14 +129,16 @@
             android:layout_margin="5dp">
 
             <ImageView
-                android:layout_gravity="fill"
-                app:srcCompat="@android:drawable/btn_star_big_on"
+                app:srcCompat="@drawable/julia"
                 android:layout_columnSpan="2"
-                android:layout_rowWeight="5" />
+                android:layout_gravity="top|center_horizontal"
+                android:adjustViewBounds="true"
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:layout_gravity="fill"
-                android:layout_rowWeight="1"
                 app:srcCompat="@android:drawable/ic_media_play" />
 
             <TextView
