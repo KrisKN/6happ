@@ -1,4 +1,4 @@
-package com.mauriundjens.www.sechsstundenapp;
+package com.mauriundjens.sechsstundenapp;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,7 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.mauriundjens.www.sechsstundenapp", appContext.getPackageName());
+        assertEquals("com.mauriundjens.sechsstundenapp", appContext.getPackageName());
+        assertEquals("com.mauriundjens.sechsstundenapp", appContext.getPackageName());
     }
 }

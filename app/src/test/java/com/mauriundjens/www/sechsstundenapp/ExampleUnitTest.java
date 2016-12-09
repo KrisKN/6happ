@@ -1,4 +1,4 @@
-package com.mauriundjens.www.sechsstundenapp;
+package com.mauriundjens.sechsstundenapp;
 
 import org.junit.Test;
 
