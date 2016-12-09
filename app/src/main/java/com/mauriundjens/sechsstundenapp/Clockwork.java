@@ -12,7 +12,8 @@ public class Clockwork
 
     private long calcMillis(long timeMillis)
     {
-        return offsetMillis + (timeMillis - startMillis) * speed;
+        long result = offsetMillis + (timeMillis - startMillis) * speed;
+        return result < 0 ? 0 : result;
     }
 
     private void update()
@@ -57,6 +58,12 @@ public class Clockwork
     public int getSpeed()
     {
         return speed;
+    }
+
+    public void setMillis(long millis)
+    {
+        offsetMillis = millis;
+        startMillis = System.currentTimeMillis();
     }
 
     public long getMillis()
