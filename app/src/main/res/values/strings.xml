@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">6-Stunden-App</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_reset_timers">Puh... sie sind weg! Alles zurücksetzen</string>
+    <string name="action_double_speed">Heute sind sie aber irgendwie nervig</string>
+    <string name="action_count_up">Ich fühle mich heute großzügig</string>
+    <string name="action_to_normal_speed">Großzügigkeitsmodus beenden</string>
 </resources>
