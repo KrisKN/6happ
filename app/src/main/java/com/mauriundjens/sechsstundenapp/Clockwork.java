@@ -51,6 +51,12 @@ public class Clockwork implements Serializable
         offsetMillis = 0;
     }
 
+    public void resetTo(long millis)
+    {
+        speed = 0;
+        setMillis(millis);
+    }
+
     public void setSpeed(int value)
     {
         update();

@@ -1,6 +1,5 @@
 package com.mauriundjens.sechsstundenapp;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 // import android.support.design.widget.FloatingActionButton;
 // import android.support.design.widget.Snackbar;
@@ -9,7 +8,12 @@ import android.support.v7.widget.Toolbar;
 // import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
     private java.util.Timer timer;
     private Clockwork[] clockworks = new Clockwork[]{new Clockwork(), new Clockwork(), new Clockwork(), new Clockwork()};
+
+    private Map<Integer,Integer> clockworkToIcon = new HashMap<Integer, Integer>();
 
     @Override
     protected void onCreate(Bundle state) {
@@ -40,13 +46,32 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 0, 1000);
 
-        clockworks[0].start();
-        clockworks[1].setMillis(7200000);
-        clockworks[1].start(-1);
-        clockworks[2].setMillis(120000);
-        clockworks[2].start(-1);
-
+        resetTimersToSixHours();
         restoreState();
+
+        /*
+        for(Clockwork clockwork : clockworks) {
+            clockwork.start(-1);
+        }
+        */
+
+        clockworkToIcon.put(0, R.id.icon_ornella);
+        clockworkToIcon.put(1, R.id.icon_maurizio);
+        clockworkToIcon.put(2, R.id.icon_jens);
+        clockworkToIcon.put(3, R.id.icon_julia);
+
+        // register action handlers for play/pause actions
+        ImageView view = (ImageView)findViewById(R.id.image_ornella);
+        view.setOnClickListener(createOnClickListener(0));
+
+        view = (ImageView)findViewById(R.id.image_maurizio);
+        view.setOnClickListener(createOnClickListener(1));
+
+        view = (ImageView)findViewById(R.id.image_jens);
+        view.setOnClickListener(createOnClickListener(2));
+
+        view = (ImageView)findViewById(R.id.image_julia);
+        view.setOnClickListener(createOnClickListener(3));
     }
 
     @Override
@@ -70,8 +95,33 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_reset_timers) {
+
+            resetTimersToSixHours();
+            runOnUiThread(iconUpdateRunnable);
             return true;
+        }
+        else if (id == R.id.action_accelerate_countdown) {
+
+            for(Clockwork clockwork : clockworks) {
+                clockwork.setSpeed(-3);
+            }
+            runOnUiThread(iconUpdateRunnable);
+            return true;
+        }
+        else if (id == R.id.action_count_up) {
+
+            for(Clockwork clockwork : clockworks) {
+                clockwork.setSpeed(1);
+            }
+            runOnUiThread(iconUpdateRunnable);
+        }
+        else if (id == R.id.action_to_normal_speed) {
+
+            for(Clockwork clockwork : clockworks) {
+                clockwork.setSpeed(-1);
+            }
+            runOnUiThread(iconUpdateRunnable);
         }
 
         return super.onOptionsItemSelected(item);
@@ -97,6 +147,53 @@ public class MainActivity extends AppCompatActivity {
             view4.setText(clockworks[3].toString());
         }
     };
+
+    private void resetTimersToSixHours() {
+
+        for(Clockwork clockwork : clockworks) {
+            // reset to 6h
+            clockwork.resetTo(21600000);
+        }
+    }
+
+    private View.OnClickListener createOnClickListener(final int clockworkIndex) {
+
+        final ImageView icon = (ImageView)findViewById(clockworkToIcon.get(clockworkIndex));
+
+        return new View.OnClickListener() {
+            //@Override
+            public void onClick(View v) {
+                if (clockworks[clockworkIndex].getSpeed() == 0) {
+                    clockworks[clockworkIndex].setSpeed(-1);
+                    icon.setImageResource(android.R.drawable.ic_media_pause);
+                }
+                else {
+                    clockworks[clockworkIndex].setSpeed(0);
+                    icon.setImageResource(android.R.drawable.ic_media_play);
+                }
+            }
+        };
+    }
+
+
+    private Runnable iconUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            int i = 0;
+            for (Clockwork clockwork : clockworks) {
+
+                final ImageView icon = (ImageView)findViewById(clockworkToIcon.get(i));
+                if (clockwork.getSpeed() == 0) {
+                    icon.setImageResource(android.R.drawable.ic_media_play);
+                }
+                else {
+                    icon.setImageResource(android.R.drawable.ic_media_pause);
+                }
+                i++;
+            }
+        }
+    };
+
 
     private void saveState() {
         File file = new File(getFilesDir(), "preferences.srl");

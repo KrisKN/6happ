@@ -3,8 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.mauriundjens.sechsstundenapp.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_reset_timers"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/action_reset_timers"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_accelerate_countdown"
+        android:orderInCategory="100"
+        android:title="@string/action_double_speed"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_count_up"
+        android:orderInCategory="100"
+        android:title="@string/action_count_up"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_to_normal_speed"
+        android:orderInCategory="100"
+        android:title="@string/action_to_normal_speed"
         app:showAsAction="never" />
 </menu>
