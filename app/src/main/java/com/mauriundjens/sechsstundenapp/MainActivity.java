@@ -1,5 +1,6 @@
 package com.mauriundjens.sechsstundenapp;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 // import android.support.design.widget.FloatingActionButton;
 // import android.support.design.widget.Snackbar;
@@ -10,32 +11,48 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class MainActivity extends AppCompatActivity {
 
     private java.util.Timer timer;
     private Clockwork[] clockworks = new Clockwork[]{new Clockwork(), new Clockwork(), new Clockwork(), new Clockwork()};
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle state) {
+        super.onCreate(state);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // call handleTimer each 100 ms
+        // call handleTimer each second
         timer = new java.util.Timer();
         timer.schedule(new java.util.TimerTask() {
             @Override
             public void run() {
                 handleTimer();
             }
-        }, 0, 100);
+        }, 0, 1000);
 
         clockworks[0].start();
         clockworks[1].setMillis(7200000);
-        clockworks[1].start(-5);
+        clockworks[1].start(-1);
         clockworks[2].setMillis(120000);
-        clockworks[2].start(-5);
+        clockworks[2].start(-1);
+
+        restoreState();
+    }
+
+    @Override
+    protected void onPause() {
+        saveState();
+        super.onPause();
     }
 
     @Override
@@ -80,4 +97,34 @@ public class MainActivity extends AppCompatActivity {
             view4.setText(clockworks[3].toString());
         }
     };
+
+    private void saveState() {
+        File file = new File(getFilesDir(), "preferences.srl");
+        try {
+            ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(file));
+            stream.writeObject(clockworks);
+        }
+        catch (FileNotFoundException e) {
+        }
+        catch (IOException e) {
+        }
+    }
+
+    private void restoreState() {
+        File file = new File(getFilesDir(), "preferences.srl");
+        try {
+            ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file));
+            Object potentialClockworks = stream.readObject();
+            if (potentialClockworks != null) { clockworks = (Clockwork[])potentialClockworks; }
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }

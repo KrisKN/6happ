@@ -1,6 +1,8 @@
 package com.mauriundjens.sechsstundenapp;
 
-public class Clockwork
+import java.io.Serializable;
+
+public class Clockwork implements Serializable
 {
     private long offsetMillis = 0;
     private long startMillis;
