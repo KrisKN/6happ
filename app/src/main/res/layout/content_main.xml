@@ -23,6 +23,7 @@
         android:layout_height="match_parent">
 
         <GridLayout
+            android:id="@+id/grid_ornella"
             android:background="?attr/colorPrimary"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
@@ -32,15 +33,14 @@
             android:layout_margin="5dp">
 
             <ImageView
+                android:id="@+id/image_ornella"
                 app:srcCompat="@drawable/ornella"
                 android:layout_columnSpan="2"
                 android:layout_gravity="top|center_horizontal"
                 android:adjustViewBounds="true"
                 android:layout_width="match_parent"
                 android:layout_height="170dp"
-                android:scaleType="centerCrop"
-                android:clickable="true"
-                android:id="@+id/image_ornella"/>
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:id="@+id/icon_ornella"
@@ -49,7 +49,7 @@
 
             <TextView
                 android:text="5:59:59"
-                android:id="@+id/textView1"
+                android:id="@+id/textView_ornella"
                 android:layout_gravity="center_vertical|fill_horizontal"
                 android:textColor="@android:color/white"
                 android:textAlignment="center"
@@ -59,6 +59,7 @@
         </GridLayout>
 
         <GridLayout
+            android:id="@+id/grid_maurizio"
             android:background="?attr/colorPrimary"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
@@ -84,7 +85,7 @@
 
             <TextView
                 android:text="5:59:59"
-                android:id="@+id/textView2"
+                android:id="@+id/textView_maurizio"
                 android:layout_gravity="center_vertical|fill_horizontal"
                 android:textColor="@android:color/white"
                 android:textAlignment="center"
@@ -93,6 +94,7 @@
         </GridLayout>
 
         <GridLayout
+            android:id="@+id/grid_jens"
             android:background="?attr/colorPrimary"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
@@ -118,7 +120,7 @@
 
             <TextView
                 android:text="5:59:59"
-                android:id="@+id/textView3"
+                android:id="@+id/textView_jens"
                 android:layout_gravity="center_vertical|fill_horizontal"
                 android:textColor="@android:color/white"
                 android:textAlignment="center"
@@ -127,6 +129,7 @@
         </GridLayout>
 
         <GridLayout
+            android:id="@+id/grid_julia"
             android:background="?attr/colorPrimary"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
@@ -152,7 +155,7 @@
 
             <TextView
                 android:text="5:59:59"
-                android:id="@+id/textView4"
+                android:id="@+id/textView_julia"
                 android:layout_gravity="center_vertical|fill_horizontal"
                 android:textColor="@android:color/white"
                 android:textAlignment="center"
