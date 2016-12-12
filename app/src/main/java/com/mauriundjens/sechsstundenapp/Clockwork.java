@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public class Clockwork implements Serializable
 {
-    private long offsetMillis = 0;
-    private long startMillis;
-    private int speed = 0;
+    private long offsetMillis = 0; // offset when timer was started
+    private long startMillis; // time of start
+    private int speed = 0; // speed multiplier
 
     public Clockwork()
     {
@@ -21,7 +21,7 @@ public class Clockwork implements Serializable
     private void update()
     {
         // time elapsed since last update is recorded,
-        // must be called before parameter changes or serialization
+        // must be called before parameter changes
         long currentMillis = System.currentTimeMillis();
         offsetMillis = calcMillis(currentMillis);
         startMillis = currentMillis;
@@ -54,7 +54,7 @@ public class Clockwork implements Serializable
     public void resetTo(long millis)
     {
         speed = 0;
-        setMillis(millis);
+        offsetMillis = millis;
     }
 
     public void setSpeed(int value)
