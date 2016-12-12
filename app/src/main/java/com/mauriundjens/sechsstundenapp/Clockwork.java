@@ -27,6 +27,13 @@ public class Clockwork implements Serializable
         startMillis = currentMillis;
     }
 
+    public long getSystemTimeAt(long millis)
+    {
+        // calculates the system time when the given clockwork value is reached
+        if (speed == 0) return -1;
+        return startMillis + (millis - offsetMillis) / speed;
+    }
+
     public void start(int speed)
     {
         update();

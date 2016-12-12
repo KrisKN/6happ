@@ -1,5 +1,6 @@
 package com.mauriundjens.sechsstundenapp;
 
+import android.content.Context;
 import android.os.Bundle;
 // import android.support.design.widget.FloatingActionButton;
 // import android.support.design.widget.Snackbar;
@@ -19,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -167,6 +169,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (clockworks[index].getSpeed() == 0) {
                     clockworks[index].setSpeed(-1);
+                    // todo: einfach mal testweise 'nen Alarm erzeugen...
+                    scheduleAlarm();
                 }
                 else {
                     clockworks[index].setSpeed(0);
@@ -221,6 +225,40 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (ClassNotFoundException e) {
             e.printStackTrace();
+        }
+    }
+
+    private long findFirstAlarm(long millis) {
+        // todo: das ist nicht getestet und funktioniert womoeglich ueberhaupt nicht
+        long result = -1;
+        long now = System.currentTimeMillis();
+        for (Clockwork clockwork : clockworks) {
+            long time = clockwork.getSystemTimeAt(millis);
+            if (time > now) {
+                if (result < 0 || time < result) {
+                    result = time;
+                }
+            }
+        }
+        return result;
+    }
+
+    private void scheduleAlarm() {
+        // todo: muss man evtl. ausstehende Alarme wieder loeschen, wenn sie sich eruebrigt haben?
+
+        // todo: das hier liefert die aktuelle Uhrzeit plus 20 Sekunden und funktioniert mit dem Alarmscheduler, ist aber natuerlich nicht die richtige Zeit
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.add(Calendar.SECOND, 20);
+        long time = calendar.getTimeInMillis();
+
+        // todo: das hier muesste eigentlich den aktuell ersten Alarm liefern, aber womoeglich ist es in einem falschen Zeitformat oder so (???)
+        // long time = findFirstAlarm(6 * 3600 * 1000 - 20000);
+
+        if (time >= 0) {
+            Bundle bundle = new Bundle();
+            AlarmScheduler scheduler = new AlarmScheduler();
+            scheduler.schedule(this, bundle, time);
         }
     }
 }
