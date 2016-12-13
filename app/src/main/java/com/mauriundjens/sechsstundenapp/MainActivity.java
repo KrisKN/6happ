@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 handleTimer();
             }
-        }, 0, 1000);
+        }, 0, 100);
 
         // register action handlers for play/pause actions
         for (int i = 0; i < 4; ++i)
