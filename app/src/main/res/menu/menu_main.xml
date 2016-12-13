@@ -13,13 +13,8 @@
         android:title="@string/action_double_speed"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_count_up"
+        android:id="@+id/action_half_speed"
         android:orderInCategory="100"
-        android:title="@string/action_count_up"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_to_normal_speed"
-        android:orderInCategory="100"
-        android:title="@string/action_to_normal_speed"
+        android:title="@string/action_half_speed"
         app:showAsAction="never" />
 </menu>

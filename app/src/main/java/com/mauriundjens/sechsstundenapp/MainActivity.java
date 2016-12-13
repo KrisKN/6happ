@@ -1,6 +1,5 @@
 package com.mauriundjens.sechsstundenapp;
 
-import android.content.Context;
 import android.os.Bundle;
 // import android.support.design.widget.FloatingActionButton;
 // import android.support.design.widget.Snackbar;
@@ -28,8 +27,9 @@ public class MainActivity extends AppCompatActivity {
     private Clockwork[] clockworks = new Clockwork[]{new Clockwork(), new Clockwork(), new Clockwork(), new Clockwork()};
 
     private View[] views = new View[4];
+    private ImageView[] images = new ImageView[4];
     private TextView[] textViews = new TextView[4];
-    private ImageView[] imageViews = new ImageView[4];
+    private ImageView[] icons = new ImageView[4];
 
     @Override
     protected void onCreate(Bundle state) {
@@ -43,14 +43,18 @@ public class MainActivity extends AppCompatActivity {
         views[1] = (View)findViewById(R.id.grid_maurizio);
         views[2] = (View)findViewById(R.id.grid_jens);
         views[3] = (View)findViewById(R.id.grid_julia);
+        images[0] = (ImageView)findViewById(R.id.image_ornella);
+        images[1] = (ImageView)findViewById(R.id.image_maurizio);
+        images[2] = (ImageView)findViewById(R.id.image_jens);
+        images[3] = (ImageView)findViewById(R.id.image_julia);
         textViews[0] = (TextView)findViewById(R.id.textView_ornella);
         textViews[1] = (TextView)findViewById(R.id.textView_maurizio);
         textViews[2] = (TextView)findViewById(R.id.textView_jens);
         textViews[3] = (TextView)findViewById(R.id.textView_julia);
-        imageViews[0] = (ImageView)findViewById(R.id.icon_ornella);
-        imageViews[1] = (ImageView)findViewById(R.id.icon_maurizio);
-        imageViews[2] = (ImageView)findViewById(R.id.icon_jens);
-        imageViews[3] = (ImageView)findViewById(R.id.icon_julia);
+        icons[0] = (ImageView)findViewById(R.id.icon_ornella);
+        icons[1] = (ImageView)findViewById(R.id.icon_maurizio);
+        icons[2] = (ImageView)findViewById(R.id.icon_jens);
+        icons[3] = (ImageView)findViewById(R.id.icon_julia);
 
         // initialize clocks
         resetTimersToSixHours();
@@ -70,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 handleTimer();
             }
-        }, 0, 333);
+        }, 0, 500);
 
         // register action handlers for play/pause actions
         for (int i = 0; i < 4; ++i)
@@ -101,35 +105,35 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_reset_timers) {
-
             resetTimersToSixHours();
             updateIcons();
             return true;
         }
         else if (id == R.id.action_accelerate_countdown) {
-
+            boolean noClockworkActive = isNoClockworkActive();
             for(Clockwork clockwork : clockworks) {
-                clockwork.setSpeed(-3);
+                if (noClockworkActive || clockwork.getSpeed() < 0.0) clockwork.setSpeed(-2.0);
             }
             updateIcons();
             return true;
         }
-        else if (id == R.id.action_count_up) {
-
+        else if (id == R.id.action_half_speed) {
+            boolean noClockworkActive = isNoClockworkActive();
             for(Clockwork clockwork : clockworks) {
-                clockwork.setSpeed(1);
+                if (noClockworkActive || clockwork.getSpeed() < 0.0) clockwork.setSpeed(-0.5);
             }
             updateIcons();
-        }
-        else if (id == R.id.action_to_normal_speed) {
-
-            for(Clockwork clockwork : clockworks) {
-                clockwork.setSpeed(-1);
-            }
-            updateIcons();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean isNoClockworkActive() {
+        for(Clockwork clockwork : clockworks) {
+            if (clockwork.getSpeed() < 0.0) return false;
+        }
+        return true;
     }
 
     private void handleTimer()
@@ -162,18 +166,18 @@ public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener createOnClickListener(final int index) {
 
-        final ImageView icon = imageViews[index];
+        final ImageView icon = icons[index];
 
         return new View.OnClickListener() {
             //@Override
             public void onClick(View v) {
-                if (clockworks[index].getSpeed() == 0) {
-                    clockworks[index].setSpeed(-1);
+                if (clockworks[index].getSpeed() >= 0.0) {
+                    clockworks[index].setSpeed(-1.0);
                     // todo: einfach mal testweise 'nen Alarm erzeugen...
                     scheduleAlarm();
                 }
                 else {
-                    clockworks[index].setSpeed(0);
+                    clockworks[index].setSpeed(1.0);
                 }
                 updateIcon(index);
             }
@@ -189,12 +193,20 @@ public class MainActivity extends AppCompatActivity {
     private void updateIcon(final int index)
     {
         final Clockwork clockwork = clockworks[index];
-        final ImageView icon = imageViews[index];
-        if (clockwork.getSpeed() == 0) {
+        final ImageView image = images[index];
+        final ImageView icon = icons[index];
+        final TextView textView = textViews[index];
+        if (clockwork.getSpeed() >= 0.0) {
+            // image.setAlpha(0.3f);
             icon.setImageResource(android.R.drawable.ic_media_pause);
+            icon.setAlpha(0.3f);
+            textView.setAlpha(0.3f);
         }
         else {
+            // image.setAlpha(1.0f);
             icon.setImageResource(android.R.drawable.ic_media_play);
+            icon.setAlpha(1.0f);
+            textView.setAlpha(1.0f);
         }
     }
 

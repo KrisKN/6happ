@@ -6,7 +6,7 @@ public class Clockwork implements Serializable
 {
     private long offsetMillis = 0; // offset when timer was started
     private long startMillis; // time of start
-    private int speed = 0; // speed multiplier
+    private double speed = 0.0; // speed multiplier
 
     public Clockwork()
     {
@@ -14,8 +14,10 @@ public class Clockwork implements Serializable
 
     private long calcMillis(long timeMillis)
     {
-        long result = offsetMillis + (timeMillis - startMillis) * speed;
-        return result < 0 ? 0 : result;
+        long result = offsetMillis + Math.round((timeMillis - startMillis) * speed);
+        if (result < 0) return 0;
+        if (result > 21600000) return 21600000; // todo: maximum should be settable
+        return result;
     }
 
     private void update()
@@ -30,11 +32,11 @@ public class Clockwork implements Serializable
     public long getSystemTimeAt(long millis)
     {
         // calculates the system time when the given clockwork value is reached
-        if (speed == 0) return -1;
-        return startMillis + (millis - offsetMillis) / speed;
+        if (speed == 0.0) return -1;
+        return startMillis + Math.round((millis - offsetMillis) / speed);
     }
 
-    public void start(int speed)
+    public void start(double speed)
     {
         update();
         this.speed = speed;
@@ -64,13 +66,13 @@ public class Clockwork implements Serializable
         offsetMillis = millis;
     }
 
-    public void setSpeed(int value)
+    public void setSpeed(double value)
     {
         update();
         speed = value;
     }
 
-    public int getSpeed()
+    public double getSpeed()
     {
         return speed;
     }
