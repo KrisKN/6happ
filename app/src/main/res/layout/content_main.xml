@@ -24,7 +24,7 @@
 
         <GridLayout
             android:id="@+id/grid_ornella"
-            android:background="?attr/colorPrimary"
+            android:background="#d02645"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
@@ -60,7 +60,7 @@
 
         <GridLayout
             android:id="@+id/grid_maurizio"
-            android:background="?attr/colorPrimary"
+            android:background="#2e7fc7"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
@@ -95,7 +95,7 @@
 
         <GridLayout
             android:id="@+id/grid_jens"
-            android:background="?attr/colorPrimary"
+            android:background="#32901f"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
@@ -130,7 +130,7 @@
 
         <GridLayout
             android:id="@+id/grid_julia"
-            android:background="?attr/colorPrimary"
+            android:background="#d78e10"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
