@@ -63,14 +63,14 @@ public class MainActivity extends AppCompatActivity {
         }
         */
 
-        // call handleTimer each second
+        // call handleTimer periodically
         timer = new java.util.Timer();
         timer.schedule(new java.util.TimerTask() {
             @Override
             public void run() {
                 handleTimer();
             }
-        }, 0, 100);
+        }, 0, 333);
 
         // register action handlers for play/pause actions
         for (int i = 0; i < 4; ++i)
