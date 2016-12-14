@@ -271,11 +271,13 @@ public class MainActivity extends AppCompatActivity {
         long minTime = Long.MAX_VALUE;
         long now = System.currentTimeMillis();
         for (int i = 0; i < 4; ++i) {
-            long time = clockworks[i].getSystemTimeAt(millis);
-            if (time > now && time < minTime) {
-                // better one found
-                result = i;
-                minTime = time;
+            if (clockworks[i].getSpeed() < 0.0) {
+                long time = clockworks[i].getSystemTimeAt(millis);
+                if (time > now && time < minTime) {
+                    // better one found
+                    result = i;
+                    minTime = time;
+                }
             }
         }
         return result;
@@ -283,20 +285,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateAlarm() {
         final long oneHourMillis = 3600000;
-        if (giftCounter == 0)
-        {
+        if (giftCounter == 0) {
             scheduleAlarm(oneHourMillis * 6 - 30000); // after 30 sec
         }
-        else if (giftCounter == 1)
-        {
+        else if (giftCounter == 1) {
             scheduleAlarm(oneHourMillis * 4);
         }
-        else if (giftCounter == 2)
-        {
+        else if (giftCounter == 2) {
             scheduleAlarm(oneHourMillis * 3);
         }
-        else if (giftCounter == 3)
-        {
+        else if (giftCounter == 3) {
             scheduleAlarm(0);
         }
     }
