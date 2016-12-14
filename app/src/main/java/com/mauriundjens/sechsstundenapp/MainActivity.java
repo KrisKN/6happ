@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         final long oneHourMillis = 3600000;
         if (giftCounter == 0)
         {
-            scheduleAlarm(oneHourMillis * 5);
+            scheduleAlarm(oneHourMillis * 6 - 30000); // after 30 sec
         }
         else if (giftCounter == 1)
         {
@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         int nextAlarmIndex = findNextAlarmIndex(millis);
         if (nextAlarmIndex >= 0) {
             long time = clockworks[nextAlarmIndex].getSystemTimeAt(millis);
-            scheduler.schedule(this, time);
+            scheduler.schedule(this, time, R.mipmap.ic_launcher);
         }
     }
 }
