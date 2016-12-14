@@ -1,6 +1,12 @@
 package com.mauriundjens.sechsstundenapp;
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -302,7 +308,20 @@ public class MainActivity extends AppCompatActivity {
         int nextAlarmIndex = findNextAlarmIndex(millis);
         if (nextAlarmIndex >= 0) {
             long time = clockworks[nextAlarmIndex].getSystemTimeAt(millis);
-            scheduler.schedule(this, time, R.mipmap.ic_launcher);
+            scheduler.schedule(this, time, createNotification());
         }
+    }
+
+    private Notification createNotification() {
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent operation = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setContentTitle("6-Stunden-App");
+        builder.setContentText("Geburtstagsüberraschung für Christian!");
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        builder.setAutoCancel(true);
+        builder.setContentIntent(operation);
+        return builder.build();
     }
 }
