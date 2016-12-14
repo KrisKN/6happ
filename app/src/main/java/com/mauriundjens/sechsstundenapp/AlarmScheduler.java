@@ -5,23 +5,27 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.Toast;
 
 
 public class AlarmScheduler extends BroadcastReceiver {
 
+    // class must have parameterless constructor!
     public AlarmScheduler() {
     }
 
-    public void schedule(Context context, Bundle extras, long timeInMillis) {
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+    public void schedule(Context context, long timeInMillis) {
         Intent intent = new Intent(context, AlarmScheduler.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+    }
 
-        // todo: die folgende Nachricht ist nur zu Debugzwecken und muss noch weg
-        Toast.makeText(context, "gleich geht's los", Toast.LENGTH_LONG).show();
+    public void cancel(Context context) {
+        Intent intent = new Intent(context, AlarmScheduler.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
     }
 
     @Override

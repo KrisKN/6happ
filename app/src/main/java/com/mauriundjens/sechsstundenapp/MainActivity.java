@@ -1,11 +1,8 @@
 package com.mauriundjens.sechsstundenapp;
 
 import android.os.Bundle;
-// import android.support.design.widget.FloatingActionButton;
-// import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-// import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,17 +16,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
     private java.util.Timer timer;
     private Clockwork[] clockworks = new Clockwork[]{new Clockwork(), new Clockwork(), new Clockwork(), new Clockwork()};
+    private AlarmScheduler scheduler = new AlarmScheduler();
 
     private View[] views = new View[4];
     private ImageView[] images = new ImageView[4];
     private TextView[] textViews = new TextView[4];
     private ImageView[] icons = new ImageView[4];
+
+    private int giftCounter = 0;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -106,34 +105,18 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_reset_timers) {
             resetTimersToSixHours();
-            updateIcons();
             return true;
         }
         else if (id == R.id.action_accelerate_countdown) {
-            boolean noClockworkActive = isNoClockworkActive();
-            for(Clockwork clockwork : clockworks) {
-                if (noClockworkActive || clockwork.getSpeed() < 0.0) clockwork.setSpeed(-2.0);
-            }
-            updateIcons();
+            changeSpeed(-2.0);
             return true;
         }
         else if (id == R.id.action_half_speed) {
-            boolean noClockworkActive = isNoClockworkActive();
-            for(Clockwork clockwork : clockworks) {
-                if (noClockworkActive || clockwork.getSpeed() < 0.0) clockwork.setSpeed(-0.5);
-            }
-            updateIcons();
+            changeSpeed(0.5);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private boolean isNoClockworkActive() {
-        for(Clockwork clockwork : clockworks) {
-            if (clockwork.getSpeed() < 0.0) return false;
-        }
-        return true;
     }
 
     private void handleTimer()
@@ -156,28 +139,43 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void resetTimersToSixHours() {
+    private boolean isNoClockworkActive() {
+        for(Clockwork clockwork : clockworks) {
+            if (clockwork.getSpeed() < 0.0) return false;
+        }
+        return true;
+    }
 
+    private void resetTimersToSixHours() {
         for(Clockwork clockwork : clockworks) {
             // reset to 6h
             clockwork.resetTo(21600000);
         }
+        updateIcons();
+        updateAlarm();
+    }
+
+    private void changeSpeed(double speed) {
+        boolean noClockworkActive = isNoClockworkActive();
+        for(Clockwork clockwork : clockworks) {
+            if (noClockworkActive || clockwork.getSpeed() < 0.0) clockwork.setSpeed(speed);
+        }
+        updateIcons();
+        updateAlarm();
     }
 
     private View.OnClickListener createOnClickListener(final int index) {
-
         final ImageView icon = icons[index];
-
         return new View.OnClickListener() {
             //@Override
             public void onClick(View v) {
                 if (clockworks[index].getSpeed() >= 0.0) {
                     clockworks[index].setSpeed(-1.0);
-                    // todo: einfach mal testweise 'nen Alarm erzeugen...
-                    scheduleAlarm();
+                    updateAlarm();
                 }
                 else {
                     clockworks[index].setSpeed(1.0);
+                    updateAlarm();
                 }
                 updateIcon(index);
             }
@@ -211,10 +209,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveState() {
-        File file = new File(getFilesDir(), "preferences.srl");
-        try {
-            ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(file));
+        // save timers
+        File clockworkFile = new File(getFilesDir(), "clockworks.srl");
+        try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(clockworkFile))) {
             stream.writeObject(clockworks);
+        }
+        catch (FileNotFoundException e) {
+        }
+        catch (IOException e) {
+        }
+
+        // save gift state
+        File giftFile = new File(getFilesDir(), "gift.srl");
+        try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(giftFile))) {
+            stream.writeInt(giftCounter);
         }
         catch (FileNotFoundException e) {
         }
@@ -223,9 +231,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void restoreState() {
-        File file = new File(getFilesDir(), "preferences.srl");
-        try {
-            ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file));
+        // restore timers
+        File clockworkFile = new File(getFilesDir(), "clockworks.srl");
+        try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(clockworkFile))) {
             Object potentialClockworks = stream.readObject();
             if (potentialClockworks != null) { clockworks = (Clockwork[])potentialClockworks; }
         }
@@ -238,39 +246,63 @@ public class MainActivity extends AppCompatActivity {
         catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        // restore gift state
+        File giftFile = new File(getFilesDir(), "gift.srl");
+        try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(giftFile))) {
+            giftCounter = stream.readInt();
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private long findFirstAlarm(long millis) {
-        // todo: das ist nicht getestet und funktioniert womoeglich ueberhaupt nicht
-        long result = -1;
+    private int findNextAlarmIndex(long millis) {
+        int result = -1;
+        long minTime = Long.MAX_VALUE;
         long now = System.currentTimeMillis();
-        for (Clockwork clockwork : clockworks) {
-            long time = clockwork.getSystemTimeAt(millis);
-            if (time > now) {
-                if (result < 0 || time < result) {
-                    result = time;
-                }
+        for (int i = 0; i < 4; ++i) {
+            long time = clockworks[i].getSystemTimeAt(millis);
+            if (time > now && time < minTime) {
+                // better one found
+                result = i;
+                minTime = time;
             }
         }
         return result;
     }
 
-    private void scheduleAlarm() {
-        // todo: muss man evtl. ausstehende Alarme wieder loeschen, wenn sie sich eruebrigt haben?
+    private void updateAlarm() {
+        final long oneHourMillis = 3600000;
+        if (giftCounter == 0)
+        {
+            scheduleAlarm(oneHourMillis * 5);
+        }
+        else if (giftCounter == 1)
+        {
+            scheduleAlarm(oneHourMillis * 4);
+        }
+        else if (giftCounter == 2)
+        {
+            scheduleAlarm(oneHourMillis * 3);
+        }
+        else if (giftCounter == 3)
+        {
+            scheduleAlarm(0);
+        }
+    }
 
-        // todo: das hier liefert die aktuelle Uhrzeit plus 20 Sekunden und funktioniert mit dem Alarmscheduler, ist aber natuerlich nicht die richtige Zeit
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.add(Calendar.SECOND, 20);
-        long time = calendar.getTimeInMillis();
+    private void scheduleAlarm(long millis) {
+        // cancel any pending events
+        scheduler.cancel(this);
 
-        // todo: das hier muesste eigentlich den aktuell ersten Alarm liefern, aber womoeglich ist es in einem falschen Zeitformat oder so (???)
-        // long time = findFirstAlarm(6 * 3600 * 1000 - 20000);
-
-        if (time >= 0) {
-            Bundle bundle = new Bundle();
-            AlarmScheduler scheduler = new AlarmScheduler();
-            scheduler.schedule(this, bundle, time);
+        int nextAlarmIndex = findNextAlarmIndex(millis);
+        if (nextAlarmIndex >= 0) {
+            long time = clockworks[nextAlarmIndex].getSystemTimeAt(millis);
+            scheduler.schedule(this, time);
         }
     }
 }
