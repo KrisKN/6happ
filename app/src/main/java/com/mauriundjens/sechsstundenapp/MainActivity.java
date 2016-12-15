@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -402,18 +403,14 @@ public class MainActivity extends AppCompatActivity {
         return "Jetzt ist aber mal gut...";
     }
 
+    private void updateGiftButton(Button button, boolean visible) {
+        button.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    }
+
     private void updateGifts() {
-        if (giftCounter >= 1) {
-            // todo: Button fuer erstes Geschenk anzeigen
-        }
-        if (giftCounter >= 2) {
-            // todo: parallel dazu Button fuer zweites Geschenk anzeigen
-        }
-        if (giftCounter >= 4) {
-            // todo: parallel dazu Button fuer drittes Geschenk anzeigen
-        }
-        if (giftCounter >= 6) {
-            // todo: parallel dazu Button fuer viertes Geschenk anzeigen
-        }
+        updateGiftButton((Button)findViewById(R.id.giftButton1), giftCounter >= 1);
+        updateGiftButton((Button)findViewById(R.id.giftButton2), giftCounter >= 2);
+        updateGiftButton((Button)findViewById(R.id.giftButton3), giftCounter >= 4);
+        updateGiftButton((Button)findViewById(R.id.giftButton4), giftCounter >= 6);
     }
 }
