@@ -2,10 +2,12 @@ package com.mauriundjens.sechsstundenapp;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView[] images = new ImageView[4];
     private TextView[] textViews = new TextView[4];
     private ImageView[] icons = new ImageView[4];
+    private Button[] buttons = new Button[4];
 
     private int giftCounter = 0;
 
@@ -47,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // find GUI elements
-        views[0] = (View)findViewById(R.id.grid_ornella);
-        views[1] = (View)findViewById(R.id.grid_maurizio);
-        views[2] = (View)findViewById(R.id.grid_jens);
-        views[3] = (View)findViewById(R.id.grid_julia);
+        views[0] = findViewById(R.id.grid_ornella);
+        views[1] = findViewById(R.id.grid_maurizio);
+        views[2] = findViewById(R.id.grid_jens);
+        views[3] = findViewById(R.id.grid_julia);
         images[0] = (ImageView)findViewById(R.id.image_ornella);
         images[1] = (ImageView)findViewById(R.id.image_maurizio);
         images[2] = (ImageView)findViewById(R.id.image_jens);
@@ -63,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
         icons[1] = (ImageView)findViewById(R.id.icon_maurizio);
         icons[2] = (ImageView)findViewById(R.id.icon_jens);
         icons[3] = (ImageView)findViewById(R.id.icon_julia);
+        buttons[0] = (Button)findViewById(R.id.giftButton1);
+        buttons[1] = (Button)findViewById(R.id.giftButton2);
+        buttons[2] = (Button)findViewById(R.id.giftButton3);
+        buttons[3] = (Button)findViewById(R.id.giftButton4);
 
         // initialize clocks
         resetTimersToSixHours();
@@ -88,7 +95,13 @@ public class MainActivity extends AppCompatActivity {
         // register action handlers for play/pause actions
         for (int i = 0; i < 4; ++i)
         {
-            views[i].setOnClickListener(createOnClickListener(i));
+            views[i].setOnClickListener(createClockClickListener(i));
+        }
+
+        // register action handlers for gift buttons
+        for (int i = 0; i < 4; ++i)
+        {
+            buttons[i].setOnClickListener(createGiftClickListener(i));
         }
     }
 
@@ -177,8 +190,7 @@ public class MainActivity extends AppCompatActivity {
         checkAlarm();
     }
 
-    private View.OnClickListener createOnClickListener(final int index) {
-        final ImageView icon = icons[index];
+    private View.OnClickListener createClockClickListener(final int index) {
         return new View.OnClickListener() {
             //@Override
             public void onClick(View v) {
@@ -197,11 +209,20 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    private View.OnClickListener createGiftClickListener(final int index) {
+        return new View.OnClickListener() {
+            //@Override
+            public void onClick(View v) {
+                showGift(index);
+            }
+        };
+    }
+
     private void updateIcons() {
         for (int i = 0; i < 4; ++i) {
             updateIcon(i);
         }
-    };
+    }
 
     private void updateIcon(final int index)
     {
@@ -353,10 +374,10 @@ public class MainActivity extends AppCompatActivity {
         if (nextAlarmIndex >= 0) {
             long time = clockworks[nextAlarmIndex].getSystemTimeAt(millis);
             String text = getAlarmText(giftCounter);
-            scheduler.schedule(this, time, id, createNotification(id, text));
+            scheduler.schedule(this, time, id, text, createNotification(id, text));
 
             // debug message
-            // Toast.makeText(this, "alarm #" + String.valueOf(giftCounter)+ " at " + String.valueOf(millis / 60), Toast.LENGTH_LONG).show();
+            if (BuildConfig.DEBUG) Toast.makeText(this, "alarm #" + String.valueOf(giftCounter)+ " at " + String.valueOf(millis / 60), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -373,29 +394,32 @@ public class MainActivity extends AppCompatActivity {
         return builder.build();
     }
 
-    private long getAlarmMillis(int index) {
+    private long getAlarmMillis(final int index) {
+        // just a few seconds for debugging
+        if (BuildConfig.DEBUG) return 6 * oneHourMillis - 5000;
+
         switch (index)
         {
-            case 0: return oneHourMillis * 6 - 30000; // oneHourMillis * 3; // todo: erstes Geschenk testweise nach 30 sec, muss viel hoeher sein
-            case 1: return oneHourMillis * 6 - 60000; // 0; // zweites Geschenk nach 6 Stunden
-            case 2: return oneHourMillis * 6 - 30000; // oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 0: return 3 * oneHourMillis; // erstes Geschenk nach 3 Stunden
+            case 1: return 0; // zweites Geschenk nach 6 Stunden
+            case 2: return 3 * oneHourMillis; // warten bis wieder auf 3 Stunden (ohne Geschenk)
             case 3: return 0; // drittes Geschenk nach 6 Stunden
-            case 4: return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 4: return 3 * oneHourMillis; // warten bis wieder auf 3 Stunden (ohne Geschenk)
             case 5: return 0; // viertes Geschenk nach 6 Stunden
-            case 6: return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 6: return 3 * oneHourMillis; // warten bis wieder auf 3 Stunden (ohne Geschenk)
             case 7: return 0; // kein Geschenk mehr nach 6 Stunden (aber Nachricht)
         }
         return -1;
     }
 
-    private String getAlarmText(int index)
+    private String getAlarmText(final int index)
     {
         switch (index)
         {
             case 0: return "3 Stunden sind rum. Dafür gibt's 'ne Belohnung!";
-            case 1: return "Tatsächlich 6 Stunden ausgehalten. Dafür gibt's nochmal was...";
+            case 1: return "Tatsächlich 6 Stunden ausgehalten. Es gibt nochmal was...";
             case 2: return "Halbzeit! Noch 3 weitere Stunden...";
-            case 3: return "Und wieder 6 Stunden. Hol Dein Geschenk ab...";
+            case 3: return "Und wieder 6 Stunden. Das ist ein Geschenk wert...";
             case 4: return "3 Stunden sind erst die halbe Miete...";
             case 5: return "Nochmal 6 Stunden rum. Ob es nochmal was gibt?";
             case 6: return "Wer hat an der Uhr gedreht?";
@@ -403,7 +427,17 @@ public class MainActivity extends AppCompatActivity {
         return "Jetzt ist aber mal gut...";
     }
 
-    private void updateGiftButton(Button button, boolean visible) {
+    private String getGiftText(final int index) {
+        switch (index) {
+            case 0: return getString(R.string.gift1);
+            case 1: return getString(R.string.gift2);
+            case 2: return getString(R.string.gift3);
+            case 3: return getString(R.string.gift4);
+        }
+        return "weitergehn, bitte gehen Sie weiter, hier gibt es nichts zu sehn, Sie müssen weitergehn...";
+    }
+
+    private void updateGiftButton(final Button button, final boolean visible) {
         button.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -412,5 +446,17 @@ public class MainActivity extends AppCompatActivity {
         updateGiftButton((Button)findViewById(R.id.giftButton2), giftCounter >= 2);
         updateGiftButton((Button)findViewById(R.id.giftButton3), giftCounter >= 4);
         updateGiftButton((Button)findViewById(R.id.giftButton4), giftCounter >= 6);
+    }
+
+    private void showGift(final int index) {
+        // define dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Gutschein");
+        builder.setMessage(getGiftText(index));
+        builder.setPositiveButton(R.string.cool, new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {} });
+
+        // show dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

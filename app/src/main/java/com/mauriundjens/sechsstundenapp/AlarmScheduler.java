@@ -16,10 +16,11 @@ public class AlarmScheduler extends BroadcastReceiver {
     public AlarmScheduler() {
     }
 
-    public void schedule(Context context, long timeInMillis, int id, Notification notification) {
+    public void schedule(Context context, long timeInMillis, int id, String text, Notification notification) {
         // create alarm (and pass notification, which is shown at this time)
         Intent intent = new Intent(context, AlarmScheduler.class);
         intent.putExtra("id", id);
+        intent.putExtra("text", text);
         intent.putExtra("notification", notification);
         PendingIntent operation = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -36,16 +37,19 @@ public class AlarmScheduler extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // show toast
-        Toast.makeText(context, "Wer hat an der Uhr gedreht?", Toast.LENGTH_LONG).show();
+        // retrieve info
+        int id = intent.getIntExtra("id", 0);
+        String text = intent.getStringExtra("text");
 
         // retrieve notification created earlier
-        int id = intent.getIntExtra("id", 0);
         Notification notification = intent.getParcelableExtra("notification");
 
         // show notification
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(id, notification);
+
+        // show toast
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 
 }
