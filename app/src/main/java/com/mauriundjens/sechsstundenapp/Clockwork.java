@@ -20,13 +20,18 @@ public class Clockwork implements Serializable
         return result;
     }
 
-    private void update()
+    public void update(long timeMillis)
+    {
+        offsetMillis = calcMillis(timeMillis);
+        startMillis = timeMillis;
+    }
+
+    public void update()
     {
         // time elapsed since last update is recorded,
         // must be called before parameter changes
         long currentMillis = System.currentTimeMillis();
-        offsetMillis = calcMillis(currentMillis);
-        startMillis = currentMillis;
+        update(currentMillis);
     }
 
     public long getSystemTimeAt(long millis)
@@ -83,14 +88,21 @@ public class Clockwork implements Serializable
         startMillis = System.currentTimeMillis();
     }
 
-    public long getMillis()
+    public long getCurrentMillis()
     {
+        // return ms at current system time
         return calcMillis(System.currentTimeMillis());
+    }
+
+    public long getStartMillis()
+    {
+        // return ms at last start or update
+        return offsetMillis;
     }
 
     public String toString()
     {
-        long millis = getMillis();
+        long millis = getCurrentMillis();
         long s = (millis / 1000) % 60;
         long m = (millis / 60000) % 60;
         long h = millis / 3600000;

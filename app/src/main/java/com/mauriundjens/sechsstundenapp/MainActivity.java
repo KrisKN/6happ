@@ -2,7 +2,6 @@ package com.mauriundjens.sechsstundenapp;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -24,6 +23,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final long oneHourMillis = 3600000;
 
     private java.util.Timer timer;
     private Clockwork[] clockworks = new Clockwork[]{new Clockwork(), new Clockwork(), new Clockwork(), new Clockwork()};
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         resetTimersToSixHours();
         restoreState();
         updateIcons();
+        updateGifts();
 
         /*
         for(Clockwork clockwork : clockworks) {
@@ -266,6 +268,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private long getNextAlarmMillis() {
+        switch (giftCounter)
+        {
+            case 0:
+                return oneHourMillis * 6 - 30000; // todo: erstes Geschenk testweise nach 30 sec, muss viel hoeher sein
+            case 1:
+                return 0; // zweites Geschenk nach 6 Stunden
+            case 2:
+                return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 3:
+                return 0; // drittes Geschenk nach 6 Stunden
+            case 4:
+                return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 5:
+                return 0; // viertes Geschenk nach 6 Stunden
+        }
+        return -1;
+    }
+
+    private void checkAlarm() {
+        // todo: Funktion von irgendwo aufrufen (am besten periodisch und vor irgendwelchen Aenderungen)
+        long millis = getNextAlarmMillis();
+        if (millis < 0) return;
+        for (Clockwork clockwork : clockworks) {
+            if (clockwork.getStartMillis() > millis && clockwork.getCurrentMillis() <= millis)
+            {
+                // ausgeloest wird nur, wenn der Wert zuvor noch zu gross fuer einen Alarm war
+                // und der neue Wert den geforderten Wert erreicht oder unterschritten hat
+                clockwork.update(); // sicherstellen, dass nicht nochmal ausgeloest wird
+                // todo: eigentlich muss das Update nicht auf die aktuelle Uhrzeit, sondern auf die Alarmzeit erfolgen, weil es ja sein kann, dass mit einem mal mehrere Alarme erreicht wurden
+
+                updateGifts();
+
+                ++giftCounter;
+                saveState();
+            }
+        }
+    }
+
     private int findNextAlarmIndex(long millis) {
         int result = -1;
         long minTime = Long.MAX_VALUE;
@@ -284,19 +325,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateAlarm() {
-        final long oneHourMillis = 3600000;
-        if (giftCounter == 0) {
-            scheduleAlarm(oneHourMillis * 6 - 30000); // after 30 sec
-        }
-        else if (giftCounter == 1) {
-            scheduleAlarm(oneHourMillis * 4);
-        }
-        else if (giftCounter == 2) {
-            scheduleAlarm(oneHourMillis * 3);
-        }
-        else if (giftCounter == 3) {
-            scheduleAlarm(0);
-        }
+        long millis = getNextAlarmMillis();
+        if (millis < 0) return;
+        scheduleAlarm(millis);
     }
 
     private void scheduleAlarm(long millis) {
@@ -315,11 +346,27 @@ public class MainActivity extends AppCompatActivity {
         PendingIntent operation = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setContentTitle("6-Stunden-App");
+        // todo: Text variabel halten, insbesondere wenn es kein Geschenk gibt, sollte nur angezeigt werden "schon wieder soundoso lange ausgehalten"
         builder.setContentText("Geburtstagsüberraschung für Christian!");
         builder.setSmallIcon(R.mipmap.ic_launcher);
         builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         builder.setAutoCancel(true);
         builder.setContentIntent(operation);
         return builder.build();
+    }
+
+    private void updateGifts() {
+        if (giftCounter >= 1) {
+            // todo: Button fuer erstes Geschenk anzeigen
+        }
+        if (giftCounter >= 2) {
+            // todo: parallel dazu Button fuer zweites Geschenk anzeigen
+        }
+        if (giftCounter >= 4) {
+            // todo: parallel dazu Button fuer drittes Geschenk anzeigen
+        }
+        if (giftCounter >= 6) {
+            // todo: parallel dazu Button fuer viertes Geschenk anzeigen
+        }
     }
 }
