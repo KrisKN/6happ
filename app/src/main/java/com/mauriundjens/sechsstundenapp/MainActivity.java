@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             // is executed in context of GUI thread
             updateTextViews();
+            checkAlarm();
         }
     };
 
@@ -161,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
         }
         updateIcons();
         updateAlarm();
+        checkAlarm();
     }
 
     private void changeSpeed(double speed) {
@@ -170,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         }
         updateIcons();
         updateAlarm();
+        checkAlarm();
     }
 
     private View.OnClickListener createOnClickListener(final int index) {
@@ -180,10 +184,12 @@ public class MainActivity extends AppCompatActivity {
                 if (clockworks[index].getSpeed() >= 0.0) {
                     clockworks[index].setSpeed(-1.0);
                     updateAlarm();
+                    checkAlarm();
                 }
                 else {
                     clockworks[index].setSpeed(1.0);
                     updateAlarm();
+                    checkAlarm();
                 }
                 updateIcon(index);
             }
@@ -269,42 +275,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private long getNextAlarmMillis() {
-        switch (giftCounter)
-        {
-            case 0:
-                return oneHourMillis * 6 - 30000; // todo: erstes Geschenk testweise nach 30 sec, muss viel hoeher sein
-            case 1:
-                return 0; // zweites Geschenk nach 6 Stunden
-            case 2:
-                return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
-            case 3:
-                return 0; // drittes Geschenk nach 6 Stunden
-            case 4:
-                return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
-            case 5:
-                return 0; // viertes Geschenk nach 6 Stunden
+        return getAlarmMillis(giftCounter);
+    }
+
+    private Clockwork findAlarmClockwork(long alarmMillis)
+    {
+        if (alarmMillis < 0) return null;
+        for (Clockwork clockwork : clockworks) {
+            if (clockwork.getUpdateMillis() > alarmMillis && clockwork.getCurrentMillis() <= alarmMillis)
+            {
+                // ausgeloest wird nur, wenn der Wert zuvor noch zu gross fuer einen Alarm war
+                // und der neue Wert den geforderten Wert erreicht oder unterschritten hat
+                return clockwork;
+            }
         }
-        return -1;
+        return null;
     }
 
     private void checkAlarm() {
         // todo: Funktion von irgendwo aufrufen (am besten periodisch und vor irgendwelchen Aenderungen)
-        long millis = getNextAlarmMillis();
-        if (millis < 0) return;
+        // find next alarm time
+        long alarmMillis = getNextAlarmMillis();
+        if (alarmMillis < 0) return;
+
+        // has any clockwork hit this alarm time?
+        Clockwork alarmClockwork = findAlarmClockwork(alarmMillis);
+        if (alarmClockwork == null) return;
+
+        // make sure no clockwork triggers another alarm before this one
+        long alarmTime = alarmClockwork.getSystemTimeAt(alarmMillis);
         for (Clockwork clockwork : clockworks) {
-            if (clockwork.getStartMillis() > millis && clockwork.getCurrentMillis() <= millis)
-            {
-                // ausgeloest wird nur, wenn der Wert zuvor noch zu gross fuer einen Alarm war
-                // und der neue Wert den geforderten Wert erreicht oder unterschritten hat
-                clockwork.update(); // sicherstellen, dass nicht nochmal ausgeloest wird
-                // todo: eigentlich muss das Update nicht auf die aktuelle Uhrzeit, sondern auf die Alarmzeit erfolgen, weil es ja sein kann, dass mit einem mal mehrere Alarme erreicht wurden
-
-                updateGifts();
-
-                ++giftCounter;
-                saveState();
-            }
+            clockwork.update(alarmTime);
         }
+
+        // update and save counter to avoid multiple execution of same alarm
+        ++giftCounter;
+        saveState();
+
+        // update UI
+        updateGifts();
+
+        // schedule next alarm
+        updateAlarm();
+        checkAlarm();
     }
 
     private int findNextAlarmIndex(long millis) {
@@ -327,32 +340,66 @@ public class MainActivity extends AppCompatActivity {
     private void updateAlarm() {
         long millis = getNextAlarmMillis();
         if (millis < 0) return;
-        scheduleAlarm(millis);
+        scheduleAlarm(millis, giftCounter);
     }
 
-    private void scheduleAlarm(long millis) {
+    private void scheduleAlarm(long millis, int id) {
         // cancel any pending events
-        scheduler.cancel(this);
+        scheduler.cancel(this, id);
 
+        // create new event
         int nextAlarmIndex = findNextAlarmIndex(millis);
         if (nextAlarmIndex >= 0) {
             long time = clockworks[nextAlarmIndex].getSystemTimeAt(millis);
-            scheduler.schedule(this, time, createNotification());
+            String text = getAlarmText(giftCounter);
+            scheduler.schedule(this, time, id, createNotification(id, text));
+
+            // debug message
+            // Toast.makeText(this, "alarm #" + String.valueOf(giftCounter)+ " at " + String.valueOf(millis / 60), Toast.LENGTH_LONG).show();
         }
     }
 
-    private Notification createNotification() {
+    private Notification createNotification(int id, String text) {
         Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent operation = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent operation = PendingIntent.getActivity(this, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setContentTitle("6-Stunden-App");
-        // todo: Text variabel halten, insbesondere wenn es kein Geschenk gibt, sollte nur angezeigt werden "schon wieder soundoso lange ausgehalten"
-        builder.setContentText("Geburtstagsüberraschung für Christian!");
+        builder.setContentText(text);
         builder.setSmallIcon(R.mipmap.ic_launcher);
         builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         builder.setAutoCancel(true);
         builder.setContentIntent(operation);
         return builder.build();
+    }
+
+    private long getAlarmMillis(int index) {
+        switch (index)
+        {
+            case 0: return oneHourMillis * 6 - 30000; // oneHourMillis * 3; // todo: erstes Geschenk testweise nach 30 sec, muss viel hoeher sein
+            case 1: return oneHourMillis * 6 - 60000; // 0; // zweites Geschenk nach 6 Stunden
+            case 2: return oneHourMillis * 6 - 30000; // oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 3: return 0; // drittes Geschenk nach 6 Stunden
+            case 4: return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 5: return 0; // viertes Geschenk nach 6 Stunden
+            case 6: return oneHourMillis * 3; // warten bis wieder auf 3 Stunden (ohne Geschenk)
+            case 7: return 0; // kein Geschenk mehr nach 6 Stunden (aber Nachricht)
+        }
+        return -1;
+    }
+
+    private String getAlarmText(int index)
+    {
+        switch (index)
+        {
+            case 0: return "3 Stunden sind rum. Dafür gibt's 'ne Belohnung!";
+            case 1: return "Tatsächlich 6 Stunden ausgehalten. Dafür gibt's nochmal was...";
+            case 2: return "Halbzeit! Noch 3 weitere Stunden...";
+            case 3: return "Und wieder 6 Stunden. Hol Dein Geschenk ab...";
+            case 4: return "3 Stunden sind erst die halbe Miete...";
+            case 5: return "Nochmal 6 Stunden rum. Ob es nochmal was gibt?";
+            case 6: return "Wer hat an der Uhr gedreht?";
+        }
+        return "Jetzt ist aber mal gut...";
     }
 
     private void updateGifts() {

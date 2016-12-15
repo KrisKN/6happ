@@ -96,6 +96,12 @@ public class Clockwork implements Serializable
 
     public long getStartMillis()
     {
+        // return time of last start or update
+        return startMillis;
+    }
+
+    public long getUpdateMillis()
+    {
         // return ms at last start or update
         return offsetMillis;
     }

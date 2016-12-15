@@ -16,19 +16,20 @@ public class AlarmScheduler extends BroadcastReceiver {
     public AlarmScheduler() {
     }
 
-    public void schedule(Context context, long timeInMillis, Notification notification) {
+    public void schedule(Context context, long timeInMillis, int id, Notification notification) {
         // create alarm (and pass notification, which is shown at this time)
         Intent intent = new Intent(context, AlarmScheduler.class);
+        intent.putExtra("id", id);
         intent.putExtra("notification", notification);
-        PendingIntent operation = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent operation = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, operation);
     }
 
-    public void cancel(Context context) {
+    public void cancel(Context context, int id) {
         // cancel previous alarm
         Intent intent = new Intent(context, AlarmScheduler.class);
-        PendingIntent operation = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent operation = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(operation);
     }
@@ -36,14 +37,15 @@ public class AlarmScheduler extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // show toast
-        Toast.makeText(context, "Geburtstagsüberraschung!", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Wer hat an der Uhr gedreht?", Toast.LENGTH_LONG).show();
 
         // retrieve notification created earlier
+        int id = intent.getIntExtra("id", 0);
         Notification notification = intent.getParcelableExtra("notification");
 
         // show notification
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notification);
+        notificationManager.notify(id, notification);
     }
 
 }
