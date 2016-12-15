@@ -16,7 +16,7 @@ public class AlarmScheduler extends BroadcastReceiver {
     public AlarmScheduler() {
     }
 
-    public void schedule(Context context, long timeInMillis, int id, String text, Notification notification) {
+    public void schedule(final Context context, final long timeInMillis, final int id, final String text, final Notification notification) {
         // create alarm (and pass notification, which is shown at this time)
         Intent intent = new Intent(context, AlarmScheduler.class);
         intent.putExtra("id", id);
@@ -27,7 +27,7 @@ public class AlarmScheduler extends BroadcastReceiver {
         alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, operation);
     }
 
-    public void cancel(Context context, int id) {
+    public void cancel(final Context context, final int id) {
         // cancel previous alarm
         Intent intent = new Intent(context, AlarmScheduler.class);
         PendingIntent operation = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT);

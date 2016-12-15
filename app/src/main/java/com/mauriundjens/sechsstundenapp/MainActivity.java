@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -227,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateIcon(final int index)
     {
         final Clockwork clockwork = clockworks[index];
-        final ImageView image = images[index];
+        // final ImageView image = images[index];
         final ImageView icon = icons[index];
         final TextView textView = textViews[index];
         if (clockwork.getSpeed() >= 0.0) {
@@ -250,9 +249,8 @@ public class MainActivity extends AppCompatActivity {
         try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(clockworkFile))) {
             stream.writeObject(clockworks);
         }
-        catch (FileNotFoundException e) {
-        }
         catch (IOException e) {
+            showError(e);
         }
 
         // save gift state
@@ -260,9 +258,8 @@ public class MainActivity extends AppCompatActivity {
         try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(giftFile))) {
             stream.writeInt(giftCounter);
         }
-        catch (FileNotFoundException e) {
-        }
         catch (IOException e) {
+            showError(e);
         }
     }
 
@@ -273,14 +270,8 @@ public class MainActivity extends AppCompatActivity {
             Object potentialClockworks = stream.readObject();
             if (potentialClockworks != null) { clockworks = (Clockwork[])potentialClockworks; }
         }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        catch (IOException|ClassNotFoundException e) {
+            // alright, fresh clockworks are used
         }
 
         // restore gift state
@@ -288,11 +279,8 @@ public class MainActivity extends AppCompatActivity {
         try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(giftFile))) {
             giftCounter = stream.readInt();
         }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
         catch (IOException e) {
-            e.printStackTrace();
+            // alright, we're starting with zero anyway
         }
     }
 
@@ -300,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
         return getAlarmMillis(giftCounter);
     }
 
-    private Clockwork findAlarmClockwork(long alarmMillis)
+    private Clockwork findAlarmClockwork(final long alarmMillis)
     {
         if (alarmMillis < 0) return null;
         for (Clockwork clockwork : clockworks) {
@@ -315,7 +303,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkAlarm() {
-        // todo: Funktion von irgendwo aufrufen (am besten periodisch und vor irgendwelchen Aenderungen)
         // find next alarm time
         long alarmMillis = getNextAlarmMillis();
         if (alarmMillis < 0) return;
@@ -342,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
         checkAlarm();
     }
 
-    private int findNextAlarmIndex(long millis) {
+    private int findNextAlarmIndex(final long millis) {
         int result = -1;
         long minTime = Long.MAX_VALUE;
         long now = System.currentTimeMillis();
@@ -365,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
         scheduleAlarm(millis, giftCounter);
     }
 
-    private void scheduleAlarm(long millis, int id) {
+    private void scheduleAlarm(final long millis, final int id) {
         // cancel any pending events
         scheduler.cancel(this, id);
 
@@ -381,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Notification createNotification(int id, String text) {
+    private Notification createNotification(final int id, final String text) {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent operation = PendingIntent.getActivity(this, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -453,6 +440,18 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Gutschein");
         builder.setMessage(getGiftText(index));
+        builder.setPositiveButton(R.string.cool, new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {} });
+
+        // show dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showError(final Exception e) {
+        // define dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Ups");
+        builder.setMessage("Da hat sich ein Fehler eingeschlichen: " + e.getMessage());
         builder.setPositiveButton(R.string.cool, new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {} });
 
         // show dialog
