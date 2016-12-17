@@ -49,10 +49,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // find GUI elements
-        views[0] = findViewById(R.id.grid_ornella);
-        views[1] = findViewById(R.id.grid_maurizio);
-        views[2] = findViewById(R.id.grid_jens);
-        views[3] = findViewById(R.id.grid_julia);
+        views[0] = findViewById(R.id.view_ornella);
+        views[1] = findViewById(R.id.view_maurizio);
+        views[2] = findViewById(R.id.view_jens);
+        views[3] = findViewById(R.id.view_julia);
         images[0] = (ImageView)findViewById(R.id.image_ornella);
         images[1] = (ImageView)findViewById(R.id.image_maurizio);
         images[2] = (ImageView)findViewById(R.id.image_jens);
