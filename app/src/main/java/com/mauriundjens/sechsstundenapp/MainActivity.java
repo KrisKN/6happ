@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         restoreState();
         updateIcons();
         updateGifts();
+        updateAlarm();
 
         /*
         for(Clockwork clockwork : clockworks) {
@@ -134,7 +135,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         else if (id == R.id.action_half_speed) {
-            changeSpeed(0.5);
+            changeSpeed(-0.5);
+            return true;
+        }
+        else if (id == R.id.action_normal_speed) {
+            changeSpeed(-1.0);
             return true;
         }
 
@@ -151,12 +156,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             // is executed in context of GUI thread
-            updateTextViews();
+            updateTexts();
             checkAlarm();
         }
     };
 
-    private void updateTextViews() {
+    private void updateTexts() {
         for (int i = 0; i < 4; ++i) {
             textViews[i].setText(clockworks[i].toString());
         }
@@ -175,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             clockwork.resetTo(21600000);
         }
         updateIcons();
+        updateTexts();
         updateAlarm();
         checkAlarm();
     }
@@ -185,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
             if (noClockworkActive || clockwork.getSpeed() < 0.0) clockwork.setSpeed(speed);
         }
         updateIcons();
+        updateTexts();
         updateAlarm();
         checkAlarm();
     }
@@ -385,41 +392,31 @@ public class MainActivity extends AppCompatActivity {
         // just a few seconds for debugging
         if (BuildConfig.DEBUG) return 6 * oneHourMillis - 5000;
 
-        switch (index)
-        {
-            case 0: return 3 * oneHourMillis; // erstes Geschenk nach 3 Stunden
-            case 1: return 0; // zweites Geschenk nach 6 Stunden
-            case 2: return 3 * oneHourMillis; // warten bis wieder auf 3 Stunden (ohne Geschenk)
-            case 3: return 0; // drittes Geschenk nach 6 Stunden
-            case 4: return 3 * oneHourMillis; // warten bis wieder auf 3 Stunden (ohne Geschenk)
-            case 5: return 0; // viertes Geschenk nach 6 Stunden
-            case 6: return 3 * oneHourMillis; // warten bis wieder auf 3 Stunden (ohne Geschenk)
-            case 7: return 0; // kein Geschenk mehr nach 6 Stunden (aber Nachricht)
-        }
-        return -1;
+        // 3 hours and 6 hours alternately
+        return index % 2 == 0 ? 3 * oneHourMillis : 0;
     }
 
     private String getAlarmText(final int index)
     {
         switch (index)
         {
-            case 0: return "3 Stunden sind rum. Dafür gibt's 'ne Belohnung!";
-            case 1: return "Tatsächlich 6 Stunden ausgehalten. Es gibt nochmal was...";
-            case 2: return "Halbzeit! Noch 3 weitere Stunden...";
-            case 3: return "Und wieder 6 Stunden. Das ist ein Geschenk wert...";
-            case 4: return "3 Stunden sind erst die halbe Miete...";
-            case 5: return "Nochmal 6 Stunden rum. Ob es nochmal was gibt?";
-            case 6: return "Wer hat an der Uhr gedreht?";
+            case 0: return getString(R.string.alarm_3h_1);
+            case 1: return getString(R.string.alarm_6h_1);
+            case 2: return getString(R.string.alarm_3h_2);
+            case 3: return getString(R.string.alarm_6h_2);
+            case 4: return getString(R.string.alarm_3h_3);
+            case 5: return getString(R.string.alarm_6h_3);
         }
-        return "Jetzt ist aber mal gut...";
+        if (index % 2 == 0) return getString(R.string.alarm_3h);
+        return getString(R.string.alarm_6h);
     }
 
     private String getGiftText(final int index) {
         switch (index) {
-            case 0: return getString(R.string.gift1);
-            case 1: return getString(R.string.gift2);
-            case 2: return getString(R.string.gift3);
-            case 3: return getString(R.string.gift4);
+            case 0: return getString(R.string.gift_1);
+            case 1: return getString(R.string.gift_2);
+            case 2: return getString(R.string.gift_3);
+            case 3: return getString(R.string.gift_4);
         }
         return "weitergehn, bitte gehen Sie weiter, hier gibt es nichts zu sehn, Sie müssen weitergehn...";
     }
@@ -438,9 +435,9 @@ public class MainActivity extends AppCompatActivity {
     private void showGift(final int index) {
         // define dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Gutschein");
+        builder.setTitle(getString(R.string.gift_title));
         builder.setMessage(getGiftText(index));
-        builder.setPositiveButton(R.string.cool, new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {} });
+        builder.setPositiveButton(getString(R.string.cool), new DialogInterface.OnClickListener() { public void onClick(DialogInterface dialog, int id) {} });
 
         // show dialog
         AlertDialog dialog = builder.create();
